@@ -15,6 +15,8 @@ public class Result implements Serializable {
 
     private String message;//信息
 
+//    private Object data ;
+
     public Result() {//alt+insert
     }
 

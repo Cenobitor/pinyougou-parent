@@ -174,6 +174,7 @@ angular.module('pagination', []).directive('tmPagination',[function(){
 
             
 
+            //每次都触发
             scope.$watch(function() {
                 
 
@@ -183,8 +184,7 @@ angular.module('pagination', []).directive('tmPagination',[function(){
 
 
                 var newValue = scope.conf.totalItems + ' ' +  scope.conf.currentPage + ' ' + scope.conf.itemsPerPage;
-                
-                
+
                 return newValue;
 
                 
