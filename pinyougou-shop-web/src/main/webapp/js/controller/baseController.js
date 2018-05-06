@@ -55,4 +55,22 @@ app.controller('baseController',function ($scope) {
         return str;
 
     }
+
+
+    /**
+     *
+     * @param list  [{"attributeName":"网络制式","attributeValue":["移动3G"]}]
+     * @param key  attributeName
+     * @param keyvalue 网络制式
+     */
+    $scope.searchObjectByKey=function (list,key,keyvalue) {
+        for (var i=0;i<list.length;i++){
+            var object = list[i];
+            if(object[key]==keyvalue){//表示找到
+                return object;
+            }
+        }
+        return null;
+    }
+
 });

@@ -1,5 +1,5 @@
  //控制层 
-app.controller('contentController' ,function($scope,$controller   ,contentService){	
+app.controller('contentController' ,function($scope,$controller   ,contentService,contentCategoryService,uploadService){
 	
 	$controller('baseController',{$scope:$scope});//继承
 	
@@ -75,5 +75,35 @@ app.controller('contentController' ,function($scope,$controller   ,contentServic
 			}			
 		);
 	}
+
+	$scope.status=['无效','有效'];
+
+
+	//查询所有的内容分类的列表
+
+	// $scope.contentCat1List=[{id:1,name:'首页轮播'},{id:1,name:'首页轮播2'}];
+
+
+	$scope.selectContentCatList=function () {
+        contentCategoryService.findAll().success(
+        	function (response) {//response List<tbcontentcategory>
+                $scope.contentCat1List=response;
+
+            }
+		)
+    }
+
+    $scope.uploadFile=function () {
+        uploadService.uploadFile().success(
+            function (response) {//result :包含里面的图片的URL
+                if(response.success){
+                    $scope.entity.pic=response.message;
+                }else{
+                    alert("失败");
+                }
+
+            }
+        )
+    }
     
 });	

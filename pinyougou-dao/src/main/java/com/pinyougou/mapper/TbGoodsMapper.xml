@@ -17,7 +17,7 @@
     <result column="price" property="price" jdbcType="DECIMAL" />
     <result column="type_template_id" property="typeTemplateId" jdbcType="BIGINT" />
     <result column="is_enable_spec" property="isEnableSpec" jdbcType="VARCHAR" />
-    <result column="is_delete" property="isDelete" jdbcType="VARCHAR" />
+    <result column="is_delete" property="isDelete" jdbcType="BIT" />
   </resultMap>
   <sql id="Example_Where_Clause" >
     <where >
@@ -112,7 +112,7 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pinyougou.pojo.TbGoods" useGeneratedKeys="true" keyProperty="id">
+  <insert id="insert" parameterType="com.pinyougou.pojo.TbGoods" >
     insert into tb_goods (id, seller_id, goods_name, 
       default_item_id, audit_status, is_marketable, 
       brand_id, caption, category1_id, 
@@ -124,9 +124,9 @@
       #{brandId,jdbcType=BIGINT}, #{caption,jdbcType=VARCHAR}, #{category1Id,jdbcType=BIGINT}, 
       #{category2Id,jdbcType=BIGINT}, #{category3Id,jdbcType=BIGINT}, #{smallPic,jdbcType=VARCHAR}, 
       #{price,jdbcType=DECIMAL}, #{typeTemplateId,jdbcType=BIGINT}, #{isEnableSpec,jdbcType=VARCHAR}, 
-      #{isDelete,jdbcType=VARCHAR})
+      #{isDelete,jdbcType=BIT})
   </insert>
-  <insert id="insertSelective" parameterType="com.pinyougou.pojo.TbGoods"  useGeneratedKeys="true" keyProperty="id">
+  <insert id="insertSelective" parameterType="com.pinyougou.pojo.TbGoods" >
     insert into tb_goods
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -225,7 +225,7 @@
         #{isEnableSpec,jdbcType=VARCHAR},
       </if>
       <if test="isDelete != null" >
-        #{isDelete,jdbcType=VARCHAR},
+        #{isDelete,jdbcType=BIT},
       </if>
     </trim>
   </insert>
@@ -284,7 +284,7 @@
         is_enable_spec = #{record.isEnableSpec,jdbcType=VARCHAR},
       </if>
       <if test="record.isDelete != null" >
-        is_delete = #{record.isDelete,jdbcType=VARCHAR},
+        is_delete = #{record.isDelete,jdbcType=BIT},
       </if>
     </set>
     <if test="_parameter != null" >
@@ -308,7 +308,7 @@
       price = #{record.price,jdbcType=DECIMAL},
       type_template_id = #{record.typeTemplateId,jdbcType=BIGINT},
       is_enable_spec = #{record.isEnableSpec,jdbcType=VARCHAR},
-      is_delete = #{record.isDelete,jdbcType=VARCHAR}
+      is_delete = #{record.isDelete,jdbcType=BIT}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -359,7 +359,7 @@
         is_enable_spec = #{isEnableSpec,jdbcType=VARCHAR},
       </if>
       <if test="isDelete != null" >
-        is_delete = #{isDelete,jdbcType=VARCHAR},
+        is_delete = #{isDelete,jdbcType=BIT},
       </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
@@ -380,7 +380,7 @@
       price = #{price,jdbcType=DECIMAL},
       type_template_id = #{typeTemplateId,jdbcType=BIGINT},
       is_enable_spec = #{isEnableSpec,jdbcType=VARCHAR},
-      is_delete = #{isDelete,jdbcType=VARCHAR}
+      is_delete = #{isDelete,jdbcType=BIT}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

@@ -34,7 +34,7 @@ public class TbGoods implements Serializable {
 
     private String isEnableSpec;
 
-    private String isDelete;
+    private Boolean isDelete;
 
     private static final long serialVersionUID = 1L;
 
@@ -158,11 +158,11 @@ public class TbGoods implements Serializable {
         this.isEnableSpec = isEnableSpec == null ? null : isEnableSpec.trim();
     }
 
-    public String getIsDelete() {
+    public Boolean getIsDelete() {
         return isDelete;
     }
 
-    public void setIsDelete(String isDelete) {
-        this.isDelete = isDelete == null ? null : isDelete.trim();
+    public void setIsDelete(Boolean isDelete) {
+        this.isDelete = isDelete;
     }
 }

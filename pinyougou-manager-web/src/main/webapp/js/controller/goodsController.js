@@ -1,5 +1,5 @@
  //控制层 
-app.controller('goodsController' ,function($scope,$controller   ,goodsService){	
+app.controller('goodsController' ,function($scope,$controller,itemCatService   ,goodsService){
 	
 	$controller('baseController',{$scope:$scope});//继承
 	
@@ -75,5 +75,24 @@ app.controller('goodsController' ,function($scope,$controller   ,goodsService){
 			}			
 		);
 	}
+
+    $scope.status=['未审核','已审核','审核未通过','关闭'];
+
+
+    $scope.itemCatList=[];
+
+    //首先 从数据库查询所有的商品分类----》   $scope.itemCatList[1]='手机'，$scope.itemCatList[865]='电脑'，页面做：----{{itemCatList[]}}
+
+    $scope.findItemCatList=function () {
+        itemCatService.findAll().success(
+            function (response) {//List<itemCat>
+                for(var i =0;i<response.length;i++){
+                    var itemcat = response[i];
+                    $scope.itemCatList[itemcat.id]=itemcat.name;
+                }
+            }
+        )
+    }
+
     
 });	
