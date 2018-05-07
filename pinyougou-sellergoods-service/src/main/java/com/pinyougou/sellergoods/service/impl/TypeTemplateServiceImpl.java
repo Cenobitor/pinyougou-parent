@@ -17,13 +17,14 @@ import com.pinyougou.pojo.TbTypeTemplateExample.Criteria;
 import com.pinyougou.sellergoods.service.TypeTemplateService;
 
 import entity.PageResult;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * 服务实现层
  * @author Administrator
  *
  */
-@Service
+@Service(timeout = 5000)
 public class TypeTemplateServiceImpl implements TypeTemplateService {
 
 	@Autowired
@@ -84,7 +85,9 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
 		}		
 	}
 	
-	
+	@Autowired
+	private RedisTemplate redisTemplate;
+
 		@Override
 	public PageResult findPage(TbTypeTemplate typeTemplate, int pageNum, int pageSize) {
 		PageHelper.startPage(pageNum, pageSize);
@@ -108,7 +111,26 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
 	
 		}
 		
-		Page<TbTypeTemplate> page= (Page<TbTypeTemplate>)typeTemplateMapper.selectByExample(example);		
+		Page<TbTypeTemplate> page= (Page<TbTypeTemplate>)typeTemplateMapper.selectByExample(example);
+
+			List<TbTypeTemplate> all = findAll();
+
+			for (TbTypeTemplate tbTypeTemplate : all) {
+				//缓存品牌列表
+				String brandIds = tbTypeTemplate.getBrandIds();
+				List<Map> mapList = JSON.parseArray(brandIds, Map.class);
+				redisTemplate.boundHashOps("brandList").put(tbTypeTemplate.getId(),mapList);
+
+				//缓存规格列表
+				List<Map> specList = findSpecList(tbTypeTemplate.getId());
+				redisTemplate.boundHashOps("specList").put(tbTypeTemplate.getId(),specList);
+			}
+			System.out.println("缓存了所有的模板对应的规格和品牌数据");
+			//每一个操作CRUD 都需要经过这个方法  这里去实现缓存操作
+			//大key： brandList   field:模板的ID    value：品牌列表
+			//大key： specList   field:模板的ID    value：规格列表
+
+
 		return new PageResult(page.getTotal(), page.getResult());
 	}
 

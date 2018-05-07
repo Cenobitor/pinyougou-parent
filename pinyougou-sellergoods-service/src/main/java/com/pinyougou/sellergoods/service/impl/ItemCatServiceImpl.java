@@ -11,13 +11,14 @@ import com.pinyougou.pojo.TbItemCatExample.Criteria;
 import com.pinyougou.sellergoods.service.ItemCatService;
 
 import entity.PageResult;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * 服务实现层
  * @author Administrator
  *
  */
-@Service
+@Service(timeout = 5000)
 public class ItemCatServiceImpl implements ItemCatService {
 
 	@Autowired
@@ -97,12 +98,25 @@ public class ItemCatServiceImpl implements ItemCatService {
 		return new PageResult(page.getTotal(), page.getResult());
 	}
 
+
+	@Autowired
+	private RedisTemplate redisTemplate;
     @Override
     public List<TbItemCat> findByParentId(Long parentId) {
 		//构建一个查询的条件  select * from tbiitemcat where paretnId= 1
 		TbItemCatExample example = new TbItemCatExample();
 		example.createCriteria().andParentIdEqualTo(parentId);
 		List<TbItemCat> tbItemCats = itemCatMapper.selectByExample(example);
+
+		//在这里缓存所有的商品分类的数据
+		//大key： itemCat   field:商品分类的名称    value：模板的ID
+
+		List<TbItemCat> all = findAll();
+		for (TbItemCat tbItemCat : all) {
+			redisTemplate.boundHashOps("itemCat").put(tbItemCat.getName(),tbItemCat.getTypeId());
+		}
+		System.out.println("缓存了商品分类的所有的数据");
+
 		return tbItemCats;
     }
 
