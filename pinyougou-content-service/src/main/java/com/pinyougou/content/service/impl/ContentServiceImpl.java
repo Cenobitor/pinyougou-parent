@@ -63,11 +63,11 @@ public class ContentServiceImpl implements ContentService {
 	 */
 	@Override
 	public void update(TbContent content){
+		TbContent tbContent = contentMapper.selectByPrimaryKey(content.getId());//原来要更新的内容
 
 
+		contentMapper.updateByPrimaryKey(content);
 		try {
-			//删除旧的数据
-			TbContent tbContent = contentMapper.selectByPrimaryKey(content.getId());//原来要更新的内容
 			//获取原来的分类的ID
 			Long categoryId = tbContent.getCategoryId();//
 			if(categoryId!=content.getCategoryId().longValue()) {
@@ -77,7 +77,7 @@ public class ContentServiceImpl implements ContentService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		contentMapper.updateByPrimaryKey(content);
+
 	}	
 	
 	/**

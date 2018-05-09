@@ -3,8 +3,10 @@ package com.pinyougou.search.service.impl;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.pinyougou.pojo.TbItem;
 import com.pinyougou.search.service.ItemSearchService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.core.query.*;
@@ -36,14 +38,18 @@ public class ItemSearchServiceImpl implements ItemSearchService {
         resultMap.putAll(map);
         //根据关键字来进行分组查询得到分类的列表
         List<String> categoryList = searchCategoryList(searchMap);
+        System.out.println(categoryList);
         resultMap.put("categoryList",categoryList);
 
         //获取品牌列表 和规格的列表（判断 如果是被点击了分类 要根据被点击的分类来实现搜索，默认展示第一个）
-        if(!"".equals(searchMap.get("category"))){
+        //StringUtils.isNotBlank((String)searchMap.get("category"));
+        if(!"".equals(searchMap.get("category")) && searchMap.get("category")!=null){
+            System.out.println("......");
             //说明有人点击了某一个商品的分类 需要根据这个商品分类来实现查询
             Map map1 = searchBrandListAndSpecListByCategory((String)searchMap.get("category"));
             resultMap.putAll(map1);
         }else {//展示默认的
+
             if (categoryList != null && categoryList.size() > 0) {
                 Map map1 = searchBrandListAndSpecListByCategory(categoryList.get(0));
                 resultMap.putAll(map1);
@@ -58,6 +64,8 @@ public class ItemSearchServiceImpl implements ItemSearchService {
 
         //1.先获取从页面传递过来的参数的值   通过KEY获取
         String keywords = (String)searchMap.get("keywords");//获取主查询的条件
+
+        keywords=keywords.replaceAll(" ","");
 
         //2.创建查询的对象    设置查询的条件  主查询条件
        /* Query query = new SimpleQuery("*:*");
@@ -105,6 +113,51 @@ public class ItemSearchServiceImpl implements ItemSearchService {
                 query.addFilterQuery(filterquery);//
             }
         }
+        //设置价格的区间 过滤条件
+        String price = (String) searchMap.get("price");//  0 -500  500-1000  3000-*
+        if(!"".equals(price) && price!=null) {
+
+            String[] split = price.split("-");
+            if(!split[1].equals("*")) {
+
+                Criteria fitercriteria = new Criteria("item_price").between(split[0], split[1], true, true);
+                FilterQuery filterquery = new SimpleFilterQuery(fitercriteria);
+                query.addFilterQuery(filterquery);//item_price:[0 TO 20]
+            }else{
+
+                Criteria fitercriteria = new Criteria("item_price").greaterThanEqual(split[0]);
+                FilterQuery filterquery = new SimpleFilterQuery(fitercriteria);
+                query.addFilterQuery(filterquery);//item_price:[0 TO 20]
+            }
+        }
+
+        //价格的排序
+        String sortField =(String) searchMap.get("sortField");//获取要排序的域的部分  price
+        String sortType =(String) searchMap.get("sortType");//获取要排序的类型  ASC  DESC
+        if(StringUtils.isNotBlank(sortField) && StringUtils.isNotBlank(sortType)) {
+            if(sortType.equals("ASC")) {
+                Sort sort = new Sort(Sort.Direction.ASC, "item_" + sortField);
+                query.addSort(sort);
+            }else{
+                Sort sort = new Sort(Sort.Direction.DESC, "item_" + sortField);
+                query.addSort(sort);
+            }
+        }
+        //分页查询
+        //从页面获取到当前的页面 和每页显示的行数
+        Integer pageNo = (Integer) searchMap.get("pageNo");
+        Integer pageSize = (Integer) searchMap.get("pageSize");
+        if(pageNo==null){
+            pageNo=1;
+        }
+        if(pageSize==null){
+            pageSize=40;
+        }
+        query.setOffset((pageNo-1)*pageSize);//相当于start   (page-1)*rows
+        query.setRows(pageSize);//设置每页显示的行数
+
+
+
 
 
         //4.执行查询 获取高亮数据
@@ -132,6 +185,13 @@ public class ItemSearchServiceImpl implements ItemSearchService {
         System.out.println("结果"+tbItems.size());
         //4.获取结果集  返回
         map.put("rows",tbItems);
+        //分页
+        int totalPages = highlightPage.getTotalPages();
+        map.put("totalPages",totalPages);
+
+        long totalElements = highlightPage.getTotalElements();
+
+        map.put("total",totalElements);
         return map;
 
     }
@@ -177,6 +237,7 @@ public class ItemSearchServiceImpl implements ItemSearchService {
      */
     public Map searchBrandListAndSpecListByCategory(String categoryName){
         Map map  = new HashMap();
+        System.out.println(">>>>>>>>"+categoryName);
         Long  typeTempldateId = (Long) redisTemplate.boundHashOps("itemCat").get(categoryName);
         List<Map> brandList = (List<Map>) redisTemplate.boundHashOps("brandList").get(typeTempldateId);
         List<Map> specList = (List<Map>) redisTemplate.boundHashOps("specList").get(typeTempldateId);
